@@ -20,6 +20,7 @@ class GroupSerializer(serializers.ModelSerializer):
     """
     Serializer for Group model.
     """
+
     class Meta:
         model = Group
         fields = ('id', 'title', 'slug', 'description')
@@ -37,5 +38,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'author', 'post', 'text', 'created')
-
-
