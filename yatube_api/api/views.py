@@ -1,20 +1,9 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
+
+from permissions import IsOwnerOrReadOnly
 from posts.models import Post, Group, Comment
 from .serializers import PostSerializer, GroupSerializer, CommentSerializer
-
-
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        """
-        Only author can change/delete.
-        :param request:
-        :param view:
-        :param obj: post or comment
-        :return: Boolean
-        """
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return request.user == obj.author
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -54,9 +43,12 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Comments for current post.
-        :return:
+        :return: queryset
         """
-        return Comment.objects.filter(post_id=self.kwargs['post_id'])
+        post_id = self.kwargs['post_id']
+        post = get_object_or_404(Post, id=post_id)
+        return post.comments.all()
+
 
     def perform_create(self, serializer):
         """
@@ -64,4 +56,6 @@ class CommentViewSet(viewsets.ModelViewSet):
         :param serializer:
         :return:
         """
-        serializer.save(author=self.request.user)
+        post_id = self.kwargs['post_id']
+        post = get_object_or_404(Post, id=post_id)
+        serializer.save(post=post, author=self.request.user)
